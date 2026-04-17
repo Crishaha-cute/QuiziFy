@@ -1,0 +1,148 @@
+import React, { useState, useEffect } from 'react';
+
+const useCountUp = (end, duration) => {
+    const [count, setCount] = useState(0);
+    const frameRate = 1000 / 60;
+    const totalFrames = Math.round(duration / frameRate);
+  
+    useEffect(() => {
+      let frame = 0;
+      const counter = setInterval(() => {
+        frame++;
+        const progress = frame / totalFrames;
+        const currentCount = Math.round(end * progress);
+        setCount(currentCount);
+  
+        if (frame === totalFrames) {
+          clearInterval(counter);
+        }
+      }, frameRate);
+  
+      return () => clearInterval(counter);
+    }, [end, duration, totalFrames]);
+  
+    return count;
+};
+
+const Confetti = () => {
+    return React.createElement(
+        'div',
+        { className: 'absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-20' },
+        Array.from({ length: 50 }).map((_, i) => {
+            const style = {
+                left: `${Math.random() * 100}%`,
+                animationDuration: `${Math.random() * 3 + 4}s`,
+                animationDelay: `${Math.random() * 5}s`,
+                backgroundColor: ['#a855f7', '#d8b4fe', '#facc15', '#4ade80'][Math.floor(Math.random() * 4)]
+            };
+            return React.createElement('div', { key: i, className: 'confetti', style: style });
+        })
+    );
+};
+
+
+const ResultsScreen = ({ score, totalQuestions, userAnswers, onPlayAgain }) => {
+  const percentage = Math.round((score / totalQuestions) * 100);
+  const animatedScore = useCountUp(score, 1000);
+  const animatedPercentage = useCountUp(percentage, 1000);
+  
+  let feedbackMessage = "Good effort! Keep practicing!";
+  if (percentage >= 80) {
+    feedbackMessage = "Excellent work! You're a quiz master!";
+  } else if (percentage >= 50) {
+    feedbackMessage = "Great job! You're on your way to mastery!";
+  }
+
+  const showConfetti = percentage >= 80;
+
+  return React.createElement(
+    'div',
+    { className: 'w-full max-w-3xl mx-auto' },
+    React.createElement(
+      'div',
+      { className: 'relative bg-white/60 dark:bg-black/30 backdrop-blur-md p-8 rounded-xl shadow-2xl border border-purple-300 dark:border-purple-500/30 text-center flex flex-col max-h-[95vh]' },
+      React.createElement(
+        'div',
+        { className: 'flex-shrink-0' },
+        showConfetti && React.createElement(Confetti, null),
+        React.createElement(
+          'div',
+          { className: 'flex items-center justify-center space-x-3' },
+          React.createElement(
+            'svg',
+            { xmlns: 'http://www.w3.org/2000/svg', className: 'h-10 w-10 text-yellow-400', viewBox: '0 0 20 20', fill: 'currentColor' },
+            React.createElement('path', { d: 'M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' })
+          ),
+          React.createElement('h2', { className: 'text-4xl font-bold' }, 'Quiz Complete!')
+        ),
+        React.createElement('p', { className: 'text-purple-600 dark:text-purple-300 text-xl mt-2 mb-6' }, feedbackMessage),
+        React.createElement(
+          'div',
+          { className: 'bg-purple-500/10 dark:bg-purple-500/20 rounded-lg p-6 mb-8' },
+          React.createElement('p', { className: 'text-2xl' }, 'Your Score'),
+          React.createElement('p', { className: 'text-6xl font-bold my-2' }, `${animatedScore} / ${totalQuestions}`),
+          React.createElement('p', { className: 'text-3xl font-semibold text-purple-700 dark:text-purple-200' }, `${animatedPercentage}%`)
+        )
+      ),
+      React.createElement(
+        'div',
+        { className: 'text-left my-8 flex-1 min-h-0 flex flex-col' },
+        React.createElement('h3', { className: 'text-2xl font-semibold mb-4 text-center flex-shrink-0' }, 'Review Your Answers'),
+        React.createElement(
+          'div',
+          { className: 'space-y-4 overflow-y-auto pr-4' },
+          userAnswers.map((answer, index) =>
+            React.createElement(
+              'div',
+              { key: index, className: `p-4 rounded-lg flex items-start space-x-4 ${answer.isCorrect ? 'bg-green-500/20' : 'bg-red-500/20'}` },
+              answer.isCorrect
+                ? React.createElement(
+                    'svg',
+                    { xmlns: 'http://www.w3.org/2000/svg', className: 'h-6 w-6 text-green-500 dark:text-green-400 flex-shrink-0 mt-1', viewBox: '0 0 20 20', fill: 'currentColor' },
+                    React.createElement('path', { fillRule: 'evenodd', d: 'M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z', clipRule: 'evenodd' })
+                  )
+                : React.createElement(
+                    'svg',
+                    { xmlns: 'http://www.w3.org/2000/svg', className: 'h-6 w-6 text-red-500 dark:text-red-400 flex-shrink-0 mt-1', viewBox: '0 0 20 20', fill: 'currentColor' },
+                    React.createElement('path', { fillRule: 'evenodd', d: 'M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z', clipRule: 'evenodd' })
+                  ),
+              React.createElement(
+                'div',
+                null,
+                React.createElement('p', { className: 'font-bold text-lg mb-2', dangerouslySetInnerHTML: { __html: answer.question } }),
+                React.createElement('p', {
+                  className: `mb-1 ${answer.isCorrect ? '' : 'line-through text-red-600 dark:text-red-300'}`,
+                  dangerouslySetInnerHTML: { __html: `Your answer: ${answer.selectedAnswer || 'Not answered'}` }
+                }),
+                !answer.isCorrect &&
+                  React.createElement('p', {
+                    className: 'text-green-600 dark:text-green-300',
+                    dangerouslySetInnerHTML: { __html: `Correct answer: ${answer.correctAnswer}` }
+                  })
+              )
+            )
+          )
+        )
+      ),
+      React.createElement(
+        'div',
+        { className: 'flex-shrink-0' },
+        React.createElement(
+          'button',
+          {
+            onClick: onPlayAgain,
+            className: 'w-full md:w-auto flex items-center justify-center py-3 px-8 bg-purple-600 text-white font-bold rounded-lg shadow-lg hover:bg-purple-700 transform hover:scale-105 transition-all duration-300 ease-in-out shimmer-button'
+          },
+          React.createElement(
+            'svg',
+            { xmlns: 'http://www.w3.org/2000/svg', className: 'h-5 w-5 mr-2', viewBox: '0 0 20 20', fill: 'currentColor' },
+            React.createElement('path', { fillRule: 'evenodd', d: 'M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.885.666A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.666-1.885z', clipRule: 'evenodd' })
+          ),
+          React.createElement('span', null, 'Play Again')
+        )
+      )
+    )
+  );
+};
+
+export default ResultsScreen;

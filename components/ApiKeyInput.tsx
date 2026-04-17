@@ -1,5 +1,5 @@
 // This component is no longer used and can be safely deleted.
-// API key management has been moved to services/config.ts for simplicity.
+// API key management now uses VITE_GEMINI_API_KEY from environment variables.
 import React from 'react';
 
 const ApiKeyInput: React.FC = () => {

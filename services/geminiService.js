@@ -3,17 +3,15 @@ import { GoogleGenAI, Type } from "@google/genai";
 /**
  * Lazily initializes the GoogleGenAI client.
  * This function is called only when an API call is needed. It sources the
- * API key from the `process.env.API_KEY` environment variable.
+ * API key from the `import.meta.env.VITE_GEMINI_API_KEY` environment variable.
  * @returns An instance of the GoogleGenAI client.
- * @throws An error if the API_KEY is not configured in the environment.
+ * @throws An error if the Gemini key is not configured in the environment.
  */
 const getAiClient = () => {
-    // The API key must be obtained exclusively from the environment variable process.env.API_KEY.
-    // Assume this variable is pre-configured and accessible.
-    const apiKey = process.env.API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
 
     if (!apiKey) {
-        throw new Error("API Key is not configured.");
+        throw new Error("Missing VITE_GEMINI_API_KEY. Set it in your environment before running the app.");
     }
     return new GoogleGenAI({ apiKey });
 };
@@ -95,7 +93,7 @@ export const generateQuiz = async (topic, difficulty, numberOfQuestions, fileCon
       console.error(`Attempt ${attempt} to generate quiz failed:`, error);
       
       // Do not retry on API key errors, as it's a fatal configuration issue.
-      if (error.message.includes("API Key is not configured")) {
+      if (error.message.includes("VITE_GEMINI_API_KEY")) {
           break;
       }
       
@@ -110,8 +108,8 @@ export const generateQuiz = async (topic, difficulty, numberOfQuestions, fileCon
   console.error("All quiz generation attempts failed.", lastError);
   
   if (lastError) {
-      if (lastError.message.includes("API Key is not configured")) {
-          throw new Error("The Gemini API key is missing. The application is not configured correctly.");
+      if (lastError.message.includes("VITE_GEMINI_API_KEY")) {
+          throw new Error("The Gemini API key is missing or invalid. Set VITE_GEMINI_API_KEY and try again.");
       }
       if (lastError.message.includes('xhr') || lastError.message.includes('500') || lastError.message.includes('fetch')) {
         throw new Error("A network error occurred while generating the quiz. Please check your connection and try again.");

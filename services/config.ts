@@ -1,3 +1,11 @@
-// For this school project, please paste your Google AI API key here.
-// You can get one for free from Google AI Studio: https://aistudio.google.com/app/apikey
-export const API_KEY: string = "AIzaSyBwKvJjzWpf5vf4Xoo3KxweEAVnbmGJp28";
+export const getGeminiApiKey = (): string => {
+  const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY?.trim();
+
+  if (!geminiApiKey) {
+    throw new Error(
+      "Missing VITE_GEMINI_API_KEY. Add it to .env.local for local development and in Vercel project environment variables for deployment."
+    );
+  }
+
+  return geminiApiKey;
+};

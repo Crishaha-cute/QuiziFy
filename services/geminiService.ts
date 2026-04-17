@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { QuizQuestion, QuizType, Difficulty } from '../types.ts';
-import { API_KEY } from './config.ts';
+import { getGeminiApiKey } from './config.ts';
 
 /**
  * Initializes the GoogleGenAI client.
@@ -9,11 +9,7 @@ import { API_KEY } from './config.ts';
  * @throws An error if the API key is not configured.
  */
 const getAiClient = () => {
-    const apiKey = API_KEY;
-
-    if (!apiKey || apiKey === "PASTE_YOUR_API_KEY_HERE") {
-        throw new Error("Your Gemini API key is missing. Please open 'services/config.ts' and paste your key.");
-    }
+    const apiKey = getGeminiApiKey();
     return new GoogleGenAI({ apiKey });
 };
 
@@ -147,7 +143,7 @@ export const generateQuiz = async (
       console.error(`Attempt ${attempt} to generate quiz failed:`, error);
       
       // Do not retry on API key errors, as it's a fatal configuration issue.
-      if (error.message.includes("API key is missing") || error.message.includes("400")) {
+      if (error.message.includes("VITE_GEMINI_API_KEY") || error.message.includes("400")) {
           break;
       }
       
@@ -162,8 +158,8 @@ export const generateQuiz = async (
   console.error("All quiz generation attempts failed.", lastError);
   
   if (lastError) {
-      if (lastError.message.includes("API key is missing") || lastError.message.includes('400') || lastError.message.includes('API key not valid')) {
-          throw new Error("Your Gemini API key is missing or invalid. Please open 'services/config.ts', paste your key, and try again.");
+      if (lastError.message.includes("VITE_GEMINI_API_KEY") || lastError.message.includes('400') || lastError.message.includes('API key not valid')) {
+          throw new Error("Your Gemini API key is missing or invalid. Set VITE_GEMINI_API_KEY in your environment and try again.");
       }
       if (lastError.message.includes('xhr') || lastError.message.includes('500') || lastError.message.includes('fetch')) {
         throw new Error("A network error occurred while generating the quiz. Please check your connection and try again.");
